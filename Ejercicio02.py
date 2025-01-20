@@ -6,36 +6,43 @@
 import csv
 import cProfile
 import pstats
-def calcular_letra_dni(numero_dni):
-    letras = "TRWAGMYFPDXBNJZSQVHLCKE"
-    return letras[numero_dni % 23]
+
+ruta_50 = 'C:\\Users\\david\\Documents\\GitHub\\practica0301_csantilmuy\\50.csv'
+ruta_1000 = 'C:\\Users\\david\\Documents\\GitHub\\practica0301_csantilmuy\\1000.csv'
+
+LETRAS_DNI = "TRWAGMYFPDXBNJZSQVHLCKE"
+
 def capitalizar_nombre(nombre):
-    return nombre.strip().title()
-def procesar_csv(ruta_archivo):
-    datos_procesados = []
-    with open(ruta_archivo, mode='r', encoding='utf-8') as file:
-        reader = csv.DictReader(file)
-        for row in reader:
-            nombre_capitalizado = capitalizar_nombre(row['Nombre'])
-            dni = int(row['DNI'])
+    return nombre.title()
+
+def calcular_letra_dni(numero_dni):
+    return LETRAS_DNI[numero_dni % 23]
+
+def procesar_archivo_csv(ruta_csv):
+    resultados = []
+    with open(ruta_csv, newline='', encoding='utf-8') as csvfile:
+        lector = csv.reader(csvfile)
+        next(lector)
+        for fila in lector:
+            nombre, dni = fila[0], int(fila[1])
+            nombre_capitalizado = capitalizar_nombre(nombre)
             letra_dni = calcular_letra_dni(dni)
-            datos_procesados.append({
-                'Nombre': nombre_capitalizado,
-                'DNI': f"{dni}-{letra_dni}"
-            })
-    return datos_procesados
+            resultados.append((nombre_capitalizado, dni, letra_dni))
+    return resultados
+
 def main():
-    ruta_archivo_50 = '/mnt/data/50.csv'
-    ruta_archivo_1000 = '/mnt/data/1000.csv'
     print("Procesando archivo con 50 personas...")
-    datos_50 = procesar_csv(ruta_archivo_50)
-    print(f"Procesadas {len(datos_50)} entradas del archivo de 50 personas.")
-    print("Procesando archivo con 1000 personas...")
-    datos_1000 = procesar_csv(ruta_archivo_1000)
-    print(f"Procesadas {len(datos_1000)} entradas del archivo de 1000 personas.")
+    resultados_50 = procesar_archivo_csv(ruta_50)
+    print(f"Procesado {len(resultados_50)} registros del archivo de 50 personas.")
+
+    print("\nProcesando archivo con 1000 personas...")
+    resultados_1000 = procesar_archivo_csv(ruta_1000)
+    print(f"Procesado {len(resultados_1000)} registros del archivo de 1000 personas.")
+
 if __name__ == "__main__":
     with cProfile.Profile() as pr:
         main()
+
     stats = pstats.Stats(pr)
     stats.sort_stats(pstats.SortKey.TIME)
     stats.print_stats()
